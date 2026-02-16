@@ -1,13 +1,14 @@
 import type { FooterLocale } from "../types";
 import { IconSignIn, IconUserPlus } from "./icons";
+import { trFooter } from "../../../i18n/domain-messages";
 
 type GuestAuthActionsProps = {
   locale: FooterLocale;
 };
 
 export const GuestAuthActions = ({ locale }: GuestAuthActionsProps) => {
-  const registerLabel = locale === "vi" ? "Đăng ký" : "Register";
-  const loginLabel = locale === "vi" ? "Đăng nhập" : "Login";
+  const registerLabel = trFooter(locale, "mfe.footer.auth.register", "common.auth.register");
+  const loginLabel = trFooter(locale, "mfe.footer.auth.login", "common.auth.login");
 
   return (
     <div className="hdr-auth-actions">

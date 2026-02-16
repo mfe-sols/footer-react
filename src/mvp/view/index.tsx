@@ -25,6 +25,7 @@ import {
   IconX,
   IconYouTube,
 } from "./components/icons";
+import { trFooter } from "../../i18n/domain-messages";
 
 type Props = {
   title: string;
@@ -139,47 +140,42 @@ export const AppView = ({
   const isPathActive = (path: string) =>
     path === "/" ? currentPath === "/" : currentPath === path || currentPath.startsWith(`${path}/`);
   const mobileTabs = useMemo(
-    () =>
-      locale === "vi"
-        ? {
-            home: "Trang chủ",
-            categories: "Danh mục",
-            lastNews: "Tin mới",
-            myPage: "Trang tôi",
-            logo: "Trang chính",
-          }
-        : {
-            home: "Home",
-            categories: "Categories",
-            lastNews: "Last news",
-            myPage: "My page",
-            logo: "Homepage",
-          },
+    () => ({
+      home: trFooter(locale, "mfe.footer.mobile.home", "footer.mobile.home"),
+      categories: trFooter(locale, "mfe.footer.mobile.categories", "footer.mobile.categories"),
+      lastNews: trFooter(locale, "mfe.footer.mobile.lastNews", "footer.mobile.lastNews"),
+      myPage: trFooter(locale, "mfe.footer.mobile.myPage", "footer.mobile.myPage"),
+      logo: trFooter(locale, "mfe.footer.mobile.logo", "footer.mobile.logo"),
+    }),
     [locale]
   );
 
-  const brandDescription = "Unified navigation space for every module in the platform.";
-  const brandDescriptionExtended =
-    locale === "vi"
-      ? "Tối ưu trải nghiệm điều hướng đồng nhất, mở rộng linh hoạt cho toàn bộ hệ sinh thái microfrontend."
-      : "Designed for consistent navigation patterns and scalable growth across the microfrontend ecosystem.";
-  const subscriptionText = locale === "vi"
-    ? {
-        title: "Email Subscription",
-        description: "Nhận cập nhật sản phẩm, release notes và thông báo kỹ thuật mới.",
-        placeholder: "Nhập email của bạn",
-        action: "Đăng ký",
-        success: "Đăng ký thành công. Vui lòng kiểm tra email xác nhận.",
-        invalid: "Email không hợp lệ. Vui lòng kiểm tra lại.",
-      }
-    : {
-        title: "Email Subscription",
-        description: "Get product updates, release notes, and new technical announcements.",
-        placeholder: "Enter your email",
-        action: "Subscribe",
-        success: "Subscribed successfully. Please check your confirmation email.",
-        invalid: "Invalid email address. Please review and try again.",
-      };
+  const brandDescription = trFooter(locale, "mfe.footer.brand.primary", "footer.brand.primary");
+  const brandDescriptionExtended = trFooter(
+    locale,
+    "mfe.footer.brand.secondary",
+    "footer.brand.secondary",
+  );
+  const subscriptionText = useMemo(
+    () => ({
+      aria: trFooter(locale, "mfe.footer.subscription.aria", "footer.subscription.aria"),
+      title: trFooter(locale, "mfe.footer.subscription.title", "footer.subscription.title"),
+      description: trFooter(
+        locale,
+        "mfe.footer.subscription.description",
+        "footer.subscription.description",
+      ),
+      placeholder: trFooter(
+        locale,
+        "mfe.footer.subscription.placeholder",
+        "footer.subscription.placeholder",
+      ),
+      action: trFooter(locale, "mfe.footer.subscription.action", "footer.subscription.action"),
+      success: trFooter(locale, "mfe.footer.subscription.success", "footer.subscription.success"),
+      invalid: trFooter(locale, "mfe.footer.subscription.invalid", "footer.subscription.invalid"),
+    }),
+    [locale]
+  );
 
   const handleSubscribe = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -228,7 +224,10 @@ export const AppView = ({
             </div>
           </section>
 
-          <nav className="ftr-nav-grid" aria-label={locale === "vi" ? "Điều hướng chân trang" : "Footer navigation"}>
+          <nav
+            className="ftr-nav-grid"
+            aria-label={trFooter(locale, "mfe.footer.nav.footer", "footer.nav.footer")}
+          >
             {config.menu.map((group) => (
               <section key={group.id} className="ftr-nav-group">
                 {group.columns.map((column) => (
@@ -269,7 +268,7 @@ export const AppView = ({
             ))}
           </nav>
 
-          <section className="ftr-subscribe" aria-label="Email subscription">
+          <section className="ftr-subscribe" aria-label={subscriptionText.aria}>
             <h3>{subscriptionText.title}</h3>
             <p>{subscriptionText.description}</p>
             <form className="ftr-subscribe-form" onSubmit={handleSubscribe} noValidate>
@@ -406,7 +405,7 @@ export const AppView = ({
 
       <nav
         className={`ftr-mobile-tabs ${mobileMenuOpen ? "is-hidden" : ""}`}
-        aria-label={locale === "vi" ? "Điều hướng nhanh" : "Quick navigation"}
+        aria-label={trFooter(locale, "mfe.footer.nav.quick", "footer.nav.quick")}
       >
         <a className={`ftr-mobile-tab ${isPathActive("/") ? "is-active" : ""}`} href="/">
           <IconHome />

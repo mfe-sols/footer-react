@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { FooterLocale } from "../types";
 import { IconBroadcast, IconMoon, IconSun } from "./icons";
+import { trFooter } from "../../../i18n/domain-messages";
 
 type FooterTopBarProps = {
   liveLabel: string;
@@ -76,6 +77,19 @@ export const FooterTopBar = ({
     };
   }, []);
 
+  const topUtilitiesAria = trFooter(locale, "mfe.footer.topUtilities", "common.topUtilities");
+  const themeAriaLabel = isDark
+    ? trFooter(locale, "mfe.footer.theme.switchToLight", "common.theme.switchToLight")
+    : trFooter(locale, "mfe.footer.theme.switchToDark", "common.theme.switchToDark");
+  const themeTitle = isDark
+    ? trFooter(locale, "mfe.footer.theme.lightMode", "common.theme.lightMode")
+    : trFooter(locale, "mfe.footer.theme.darkMode", "common.theme.darkMode");
+  const localeSwitchAria = trFooter(
+    locale,
+    "mfe.footer.locale.switchAria",
+    "common.locale.switchAria",
+  );
+
   return (
     <div className="hdr-livebar">
       <span className="hdr-live-pill">
@@ -88,18 +102,18 @@ export const FooterTopBar = ({
           <span aria-hidden="true">{marqueeLabel}</span>
         </div>
       </div>
-      <div className="hdr-top-actions" role="group" aria-label="Top utilities">
+      <div className="hdr-top-actions" role="group" aria-label={topUtilitiesAria}>
         <button
           type="button"
           className="hdr-icon-btn"
           onClick={onToggleTheme}
-          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-          title={isDark ? "Light mode" : "Dark mode"}
+          aria-label={themeAriaLabel}
+          title={themeTitle}
         >
           {isDark ? <IconSun /> : <IconMoon />}
         </button>
 
-        <div className="hdr-locale-switch" role="group" aria-label="Language">
+        <div className="hdr-locale-switch" role="group" aria-label={localeSwitchAria}>
           <button
             type="button"
             className={locale === "en" ? "is-active" : ""}

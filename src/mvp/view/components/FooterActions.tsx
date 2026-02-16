@@ -2,6 +2,7 @@ import type { AuthUserInfo, FooterLocale } from "../types";
 import { GuestAuthActions } from "./GuestAuthActions";
 import { IconClose, IconMenu, IconMoon, IconSearch, IconSun } from "./icons";
 import { UserMenu } from "./UserMenu";
+import { trFooter } from "../../../i18n/domain-messages";
 
 type FooterActionsProps = {
   locale: FooterLocale;
@@ -43,8 +44,21 @@ export const FooterActions = ({
   onToggleMobileMenu,
   closeNavigationLabel,
   openNavigationLabel,
-}: FooterActionsProps) => (
-  <div className="hdr-actions">
+}: FooterActionsProps) => {
+  const themeAriaLabel = isDark
+    ? trFooter(locale, "mfe.footer.theme.switchToLight", "common.theme.switchToLight")
+    : trFooter(locale, "mfe.footer.theme.switchToDark", "common.theme.switchToDark");
+  const themeTitle = isDark
+    ? trFooter(locale, "mfe.footer.theme.lightMode", "common.theme.lightMode")
+    : trFooter(locale, "mfe.footer.theme.darkMode", "common.theme.darkMode");
+  const localeSwitchAria = trFooter(
+    locale,
+    "mfe.footer.locale.switchAria",
+    "common.locale.switchAria",
+  );
+
+  return (
+    <div className="hdr-actions">
     <label className="hdr-search hdr-actions-search">
       <span className="icon"><IconSearch /></span>
       <input
@@ -63,13 +77,13 @@ export const FooterActions = ({
         type="button"
         className="hdr-icon-btn"
         onClick={onToggleTheme}
-        aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-        title={isDark ? "Light mode" : "Dark mode"}
+        aria-label={themeAriaLabel}
+        title={themeTitle}
       >
         {isDark ? <IconSun /> : <IconMoon />}
       </button>
 
-      <div className="hdr-locale-switch" role="group" aria-label="Language">
+      <div className="hdr-locale-switch" role="group" aria-label={localeSwitchAria}>
         <button
           type="button"
           className={locale === "en" ? "is-active" : ""}
@@ -109,4 +123,5 @@ export const FooterActions = ({
       {mobileMenuOpen ? <IconClose /> : <IconMenu />}
     </button>
   </div>
-);
+  );
+};

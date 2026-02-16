@@ -19,6 +19,9 @@ import {
 
 const getThemeFromElement = (target: Element | null): "light" | "dark" =>
   target?.getAttribute("data-theme") === "dark" ? "dark" : "light";
+const LOCALE_STORAGE_KEY = "app-locale";
+const LOCALE_CHANGE_EVENT = "app-locale-change";
+const normalizeLocale = (next?: string | null): "en" | "vi" => (next === "vi" ? "vi" : "en");
 
 export default function Root() {
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -55,8 +58,8 @@ export default function Root() {
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
-    const applyLocale = (next: string) => {
-      const normalized = next === "vi" ? "vi" : "en";
+    const applyLocale = (next?: string | null) => {
+      const normalized = normalizeLocale(next);
       setLocale(normalized);
       setLocaleState(normalized);
       document.documentElement.setAttribute("lang", normalized);
@@ -66,15 +69,14 @@ export default function Root() {
       if (detail?.locale) applyLocale(detail.locale);
     };
     const onStorage = (event: StorageEvent) => {
-      if (event.key === "app-locale") {
-        applyLocale(getStoredLocale());
-      }
+      if (event.key !== LOCALE_STORAGE_KEY) return;
+      applyLocale(event.newValue ?? getStoredLocale());
     };
-    window.addEventListener("app-locale-change", onLocaleChange);
+    window.addEventListener(LOCALE_CHANGE_EVENT, onLocaleChange);
     window.addEventListener("storage", onStorage);
     applyLocale(getStoredLocale());
     return () => {
-      window.removeEventListener("app-locale-change", onLocaleChange);
+      window.removeEventListener(LOCALE_CHANGE_EVENT, onLocaleChange);
       window.removeEventListener("storage", onStorage);
     };
   }, []);

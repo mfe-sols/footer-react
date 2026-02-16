@@ -2,6 +2,7 @@ import * as React from "react";
 import * as ReactDOMClient from "react-dom/client";
 import singleSpaReact from "single-spa-react";
 import { defineDesignSystem, ensureTokens } from "@mfe-sols/ui-kit";
+import "./i18n/domain-messages";
 import Root from "./root.component";
 import { initMfeErrorReporter } from "./mfe-error-reporter";
 
