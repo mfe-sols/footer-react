@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Footer React - Standalone Dev</title>
+  <!-- Unified CSS from system shell with safe local fallback -->
+  <script>
+    (function injectSystemStyles() {
+      let key = "mfe-system-origin:footer-react";
+      let params = new URLSearchParams(window.location.search);
+
+      let normalizeOrigin = function (value) {
+        if (!value) return "";
+        try {
+          let parsed = new URL(value, window.location.origin);
+          if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
+          return parsed.origin;
+        } catch (e) {
+          return "";
+        }
+      };
+
+      let isAllowedOrigin = function (origin) {
+        if (!origin) return false;
+        try {
+          let parsed = new URL(origin);
+          let host = parsed.hostname.toLowerCase();
+          if (host === "localhost" || host === "127.0.0.1") return true;
+          return host === "mfe-root-config.vercel.app";
+        } catch (e) {
+          return false;
+        }
+      };
+
+      let fromQuery = normalizeOrigin(
+        params.get("system-origin") || params.get("systemOrigin")
+      );
+      let fromStorage = "";
+      try {
+        fromStorage = normalizeOrigin(localStorage.getItem(key) || "");
+      } catch (e) {}
+
+      let fallbackOrigin =
+        window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+          ? "http://localhost:9000"
+          : "https://mfe-root-config.vercel.app";
+
+      let origin = isAllowedOrigin(fromQuery)
+        ? fromQuery
+        : isAllowedOrigin(fromStorage)
+        ? fromStorage
+        : fallbackOrigin;
+
+      try {
+        localStorage.setItem(key, origin);
+      } catch (e) {}
+
+      let versionRaw = params.get("system-css-version") || params.get("cssv") || "stable";
+      let version = /^[A-Za-z0-9._-]{1,64}$/.test(versionRaw) ? versionRaw : "stable";
+
+      if (origin !== window.location.origin) {
+        let preconnect = document.createElement("link");
+        preconnect.rel = "preconnect";
+        preconnect.href = origin;
+        preconnect.crossOrigin = "anonymous";
+        document.head.appendChild(preconnect);
+      }
+
+      let injectWithFallback = function (remotePath, localPath) {
+        let link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.crossOrigin = "anonymous";
+        link.referrerPolicy = "no-referrer";
+        link.href = origin + remotePath + "?v=" + encodeURIComponent(version);
+
+        let retried = false;
+        link.onerror = function () {
+          if (retried) return;
+          retried = true;
+          link.crossOrigin = "";
+          link.referrerPolicy = "";
+          link.href = localPath + "?v=" + encodeURIComponent(version);
+        };
+
+        document.head.appendChild(link);
+      };
+
+      injectWithFallback("/ui-kit.css", "/ui-kit.css");
+      injectWithFallback("/root-config.css", "/root-config.css");
+    })();
+  </script>
+
+  <style>
+    /* minimal reset for standalone dev */
+    body { margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; }
+    #standalone-root { min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="standalone-root"></div>
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.15.1/dist/system.min.js"></script>
+  <script type="systemjs-importmap">
+    {
+      "imports": {
+        "@org/footer-react": "/org-footer-react.js"
+      }
+    }
+  </script>
+  <script>
+    (async function mountStandalone() {
+      const root = document.getElementById('standalone-root') || document.body;
+      const props = {
+        name: '@org/footer-react',
+        domElement: root,
+      };
+      try {
+        if (typeof window.System === 'undefined' || typeof window.System.import !== 'function') {
+          throw new Error('SystemJS runtime is not available');
+        }
+
+        const app = await window.System.import('@org/footer-react');
+        if (typeof app.bootstrap === 'function') {
+          await app.bootstrap(props);
+        }
+        if (typeof app.mount === 'function') {
+          await app.mount(props);
+        } else {
+          throw new Error('mount lifecycle not found in /org-footer-react.js');
+        }
+
+        // Debug helper for manual remount testing in browser console.
+        window.__mfeFooterStandaloneUnmount = async function () {
+          if (typeof app.unmount === 'function') {
+            await app.unmount(props);
+          }
+        };
+      } catch (error) {
+        console.error('[standalone] Failed to mount footer-react', error);
+        root.innerHTML =
+          '<div style="padding:24px;font:14px/1.5 ui-sans-serif,system-ui,sans-serif;color:#b42318;">' +
+          'Failed to render standalone footer module. Check browser console.' +
+          '</div>';
+      }
+    })();
+  </script>
+</body>
+<!-- ── Dev Auth Panel ────────────────────────────────────────── -->
+  <script>
+    (function devAuthPanel() {
+      let isLocalHost =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+      let ENABLE_KEY = 'mfe-dev-auth-panel-enabled';
+      let params = new URLSearchParams(window.location.search);
+      let enableFromQuery = params.get('dev-auth') === '1' || params.get('devAuth') === '1';
+      let disableFromQuery = params.get('dev-auth') === '0' || params.get('devAuth') === '0';
+
+      if (enableFromQuery) {
+        try { localStorage.setItem(ENABLE_KEY, '1'); } catch (e) {}
+      }
+      if (disableFromQuery) {
+        try { localStorage.removeItem(ENABLE_KEY); } catch (e) {}
+      }
+
+      let enabledForLive = false;
+      try {
+        enabledForLive = localStorage.getItem(ENABLE_KEY) === '1';
+      } catch (e) {}
+
+      if (!isLocalHost && !enabledForLive) return;
+
+      let STORAGE_KEY = 'mfe-auth-state';
+      let SCOPE_KEY = 'mfe-auth-storage';
+      let CHANNEL_NAME = 'mfe-auth-channel';
+
+      let MOCK_USER = {
+        id: 'dev-user-001',
+        email: 'developer@orchestra.dev',
+        name: 'Dev User',
+        displayName: 'Dev User',
+        photoURL: '',
+        roles: ['admin']
+      };
+
+      let MOCK_TOKENS = {
+        accessToken: 'dev-mock-access-token-' + Date.now(),
+        refreshToken: 'dev-mock-refresh-token-' + Date.now(),
+        expiresAt: Date.now() + 86400000
+      };
+
+      function readAuth() {
+        try {
+          let raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return null;
+          let parsed = JSON.parse(raw);
+          return (parsed && parsed.tokens && parsed.tokens.accessToken) ? parsed : null;
+        } catch (e) { return null; }
+      }
+
+      function writeAuth(state) {
+        try {
+          if (!state) {
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(SCOPE_KEY);
+          } else {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            localStorage.setItem(SCOPE_KEY, 'local');
+          }
+          // Notify via BroadcastChannel (same-tab won't get storage event)
+          try {
+            let bc = new BroadcastChannel(CHANNEL_NAME);
+            bc.postMessage({ type: 'auth:update', state: state });
+            setTimeout(function() { bc.close(); }, 100);
+          } catch (e) {}
+          // Reload to reinitialize React state cleanly
+          window.location.reload();
+        } catch (e) {
+          console.error('[Dev Auth]', e);
+        }
+      }
+
+      function createPanel() {
+        if (document.getElementById('dev-auth-panel')) return;
+
+        let auth = readAuth();
+        let isLoggedIn = Boolean(auth);
+
+        // Container
+        let panel = document.createElement('div');
+        panel.id = 'dev-auth-panel';
+        panel.style.cssText = [
+          'position:fixed',
+          'bottom:16px',
+          'left:16px',
+          'z-index:99999',
+          'display:flex',
+          'align-items:center',
+          'gap:8px',
+          'padding:8px 12px',
+          'border-radius:12px',
+          'font-family:ui-sans-serif,system-ui,sans-serif',
+          'font-size:12px',
+          'font-weight:500',
+          'backdrop-filter:blur(12px)',
+          'box-shadow:0 8px 24px rgba(0,0,0,0.12)',
+          'border:1px solid rgba(255,255,255,0.15)',
+          'background:rgba(15,23,42,0.9)',
+          'color:#94a3b8',
+          'transition:opacity .2s'
+        ].join(';');
+
+        // Status dot
+        let dot = document.createElement('span');
+        dot.style.cssText = [
+          'width:8px',
+          'height:8px',
+          'border-radius:50%',
+          'flex-shrink:0',
+          'background:' + (isLoggedIn ? '#34d399' : '#f87171')
+        ].join(';');
+        panel.appendChild(dot);
+
+        // Label
+        let label = document.createElement('span');
+        label.style.cssText = 'color:#e2e8f0;white-space:nowrap';
+        if (isLoggedIn) {
+          let user = auth.user || {};
+          label.textContent = user.displayName || user.email || 'Authenticated';
+        } else {
+          label.textContent = 'Not authenticated';
+        }
+        panel.appendChild(label);
+
+        // Separator
+        let sep = document.createElement('span');
+        sep.style.cssText = 'width:1px;height:16px;background:#334155;flex-shrink:0';
+        panel.appendChild(sep);
+
+        if (isLoggedIn) {
+          // Sign Out button
+          let btnOut = document.createElement('button');
+          btnOut.textContent = 'Sign Out';
+          btnOut.style.cssText = [
+            'border:none',
+            'background:#dc2626',
+            'color:#fff',
+            'padding:4px 12px',
+            'border-radius:6px',
+            'font-size:11px',
+            'font-weight:600',
+            'cursor:pointer',
+            'transition:background .15s',
+            'white-space:nowrap'
+          ].join(';');
+          btnOut.onmouseenter = function() { btnOut.style.background = '#b91c1c'; };
+          btnOut.onmouseleave = function() { btnOut.style.background = '#dc2626'; };
+          btnOut.onclick = function() { writeAuth(null); };
+          panel.appendChild(btnOut);
+        } else {
+          // Sign In button
+          let btnIn = document.createElement('button');
+          btnIn.textContent = 'Dev Sign In';
+          btnIn.style.cssText = [
+            'border:none',
+            'background:#3b82f6',
+            'color:#fff',
+            'padding:4px 12px',
+            'border-radius:6px',
+            'font-size:11px',
+            'font-weight:600',
+            'cursor:pointer',
+            'transition:background .15s',
+            'white-space:nowrap'
+          ].join(';');
+          btnIn.onmouseenter = function() { btnIn.style.background = '#2563eb'; };
+          btnIn.onmouseleave = function() { btnIn.style.background = '#3b82f6'; };
+          btnIn.onclick = function() {
+            writeAuth({ tokens: MOCK_TOKENS, user: MOCK_USER });
+          };
+          panel.appendChild(btnIn);
+        }
+
+        // DEV badge
+        let badge = document.createElement('span');
+        badge.textContent = 'DEV';
+        badge.style.cssText = [
+          'padding:2px 6px',
+          'border-radius:4px',
+          'font-size:9px',
+          'font-weight:700',
+          'letter-spacing:0.08em',
+          'background:rgba(251,191,36,0.15)',
+          'color:#fbbf24',
+          'line-height:1.4'
+        ].join(';');
+        panel.appendChild(badge);
+
+        document.body.appendChild(panel);
+      }
+
+      // Wait for DOM ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', createPanel);
+      } else {
+        createPanel();
+      }
+    })();
+  </script>
+</html>
