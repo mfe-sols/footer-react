@@ -72,8 +72,8 @@ export const AppView = ({
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeMobileGroup, setActiveMobileGroup] = useState(config.menu[0]?.id || "");
-  const subscriberEmailDefault = authUser?.email?.trim() || "";
-  const [subscriberEmail, setSubscriberEmail] = useState(subscriberEmailDefault);
+
+  const [subscriberEmail, setSubscriberEmail] = useState("");
   const [subscriptionStatus, setSubscriptionStatus] = useState<"idle" | "invalid" | "success">("idle");
 
   useEffect(() => {
@@ -81,10 +81,6 @@ export const AppView = ({
       setActiveMobileGroup(config.menu[0]?.id || "");
     }
   }, [activeMobileGroup, config.menu]);
-
-  useEffect(() => {
-    setSubscriberEmail(subscriberEmailDefault);
-  }, [subscriberEmailDefault]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
